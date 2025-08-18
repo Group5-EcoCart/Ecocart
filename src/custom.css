@@ -1,0 +1,29 @@
+.text-clr {
+  font-size: 23px;
+  font-family: 'Inria Sans', sans-serif;
+  color: #E7FBE6;
+}
+
+.bg-clr {
+  background-color: #008080;
+}
+
+.search-container {
+  background-color: #3fd6d1;
+  border-radius: 25px;
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Inria Sans', sans-serif;
+  font-size: 16px;
+  color: white;
+  width: 20vW;
+}
+
+.search-input::placeholder {
+  color: white;
+  opacity: 0.8;
+}

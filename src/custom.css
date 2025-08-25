@@ -1,7 +1,7 @@
 .text-clr {
   font-size: 23px;
-  font-family: 'Inria Sans', sans-serif;
-  color: #E7FBE6;
+  font-family: "Inria Sans", sans-serif;
+  color: #e7fbe6;
 }
 
 .bg-clr {
@@ -17,13 +17,116 @@
   border: none;
   outline: none;
   background: transparent;
-  font-family: 'Inria Sans', sans-serif;
+  font-family: "Inria Sans", sans-serif;
   font-size: 16px;
   color: white;
-  width: 20vW;
+  width: 20vw;
 }
 
 .search-input::placeholder {
   color: white;
   opacity: 0.8;
+}
+
+/* Styles for Register Page */
+.register-container {
+  border-radius: 15px;
+  overflow: hidden;
+  max-width: 1050px;
+  width: 95%;
+}
+
+.register-bg-img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.register-right {
+  width: 500px;
+  min-width: 320px;
+  flex-shrink: 0;
+}
+
+.input-bg {
+  background-color: #f0f0f0; 
+  border-radius: 8px;
+  width: 100%;
+  height: 49px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.input-bg:focus-within {
+  border-color: #f97316; 
+}
+
+.form-input,
+.form-input-select {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  height: 100%;
+  font-family: "Inria Sans", sans-serif;
+}
+
+.form-input {
+    padding: 0 1rem;
+}
+
+.form-input::placeholder {
+  color: #6c757d;
+}
+
+.form-input-select {
+  padding: 0 0.75rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  color: #6c757d;
+}
+
+.form-input-select:required:invalid {
+  color: #6c757d;
+}
+
+.form-input-select option {
+  color: #212529;
+}
+
+.register-btn {
+  background-color: #f97316;
+  color: white;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.register-btn:hover {
+  background-color: #ea580c;
+  color: white;
+}
+
+.register-right h2 {
+  font-weight: bold;
+  color: #333;
+}
+
+.register-login-link {
+  color: #f97316;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.register-login-link:hover {
+  text-decoration: underline;
+  color: #ea580c;
 }

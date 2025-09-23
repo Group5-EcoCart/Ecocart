@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Email, Password, SeePassword, NotSeePassword, GoogleIcon, FacebookIcon } from "../Components/Images";
+import { Email, Password, SeePassword, NotSeePassword, GoogleIcon, FacebookIcon } from "../Components/Images.jsx";
 import { loginUser } from "../Service/Auth.js";
 import toast from 'react-hot-toast';
 

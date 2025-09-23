@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Navbar from '../Components/Navbar';
-import { getUserProfile, updateUserProfile, getUserAddresses, addAddress, updateAddress, deleteAddress } from '../Service/User';
+import Navbar from '../../Components/Navbar';
+import { getUserProfile, updateUserProfile, getUserAddresses, addAddress, updateAddress, deleteAddress } from '../../Service/User';
 import toast from 'react-hot-toast';
 
 const AddressForm = ({ initialData = {}, onSave, onCancel }) => {

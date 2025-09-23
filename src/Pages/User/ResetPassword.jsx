@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { resetPassword } from '../Service/Auth';
-import { Password, SeePassword, NotSeePassword } from '../Components/Images';
+import { resetPassword } from '../../Service/Auth';
+import { Password, SeePassword, NotSeePassword } from '../../Components/Images';
 
 export default function ResetPassword() {
     const [password, setPassword] = useState('');

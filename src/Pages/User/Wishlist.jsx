@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../Components/Navbar';
-import { getWishlist, removeFromWishlist, addToCart } from '../Service/Buyer';
+import Navbar from '../../Components/Navbar';
+import { getWishlist, removeFromWishlist, addToCart } from '../../Service/Buyer';
 import toast from 'react-hot-toast';
 
 // A simplified card for the wishlist page

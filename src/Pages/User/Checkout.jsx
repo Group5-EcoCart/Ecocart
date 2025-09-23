@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Navbar from '../Components/Navbar';
-import { getAddresses, addAddress } from '../Service/Buyer';
-import { createOrder, makePayment } from '../Service/Buyer';
+import Navbar from '../../Components/Navbar';
+import { getAddresses, addAddress } from '../../Service/Buyer';
+import { createOrder, makePayment } from '../../Service/Buyer';
 import toast from 'react-hot-toast';
 
 export default function Checkout() {

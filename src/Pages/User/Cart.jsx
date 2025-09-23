@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../Components/Navbar';
-import { getCart, removeFromCart, updateCartQuantity } from '../Service/Buyer';
+import Navbar from '../../Components/Navbar';
+import { getCart, removeFromCart, updateCartQuantity } from '../../Service/Buyer';
 import toast from 'react-hot-toast';
 
 const CartItem = ({ item, onQuantityChange, onRemove }) => {

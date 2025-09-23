@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '../Components/Navbar';
-import { getProductById } from '../Service/Product';
-import { addToCart } from '../Service/Buyer';
+import Navbar from '../../Components/Navbar';
+import { getProductById } from '../../Service/Product';
+import { addToCart } from '../../Service/Buyer';
 import toast from 'react-hot-toast';
 
 export default function ProductDetail() {

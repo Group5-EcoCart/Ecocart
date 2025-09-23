@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../Components/Navbar';
-import Sidebar from '../Components/Sidebar';
-import ProductCard from '../Components/ProductCard';
-import Pagination from '../Components/Pagination'; // Import the Pagination component
-import { getAllProducts } from '../Service/Product';
+import Navbar from '../../Components/Navbar';
+import Sidebar from '../../Components/Sidebar';
+import ProductCard from '../../Components/ProductCard';
+import Pagination from '../../Components/Pagination'; // Import the Pagination component
+import { getAllProducts } from '../../Service/Product';
 import toast from 'react-hot-toast';
 
 export default function Shop() {

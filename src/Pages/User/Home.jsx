@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getAllProducts } from '../Service/Product.js';
-import Navbar from '../Components/Navbar.jsx';
-import ProductCard from '../Components/ProductCard.jsx';
+import { getAllProducts } from '../../Service/Product.js';
+import Navbar from '../../Components/Navbar.jsx';
+import ProductCard from '../../Components/ProductCard.jsx';
 import toast from 'react-hot-toast';
 
 export default function Home() {

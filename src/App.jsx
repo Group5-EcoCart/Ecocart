@@ -1,16 +1,16 @@
 import { Routes, Route } from 'react-router-dom';
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
-import ForgotPassword from './Pages/ForgotPassword';
-import ResetPassword from './Pages/ResetPassword';
-import Home from './Pages/Home';
-import Wishlist from './Pages/Wishlist';
-import Cart from './Pages/Cart';
-import Shop from './Pages/Shop'; // Import the new Shop page
-import Checkout from './Pages/Checkout';
-import Orders from './Pages/Orders';
-import ProductDetail from './Pages/ProductDetail';
-import Profile from './Pages/Profile';
+import ForgotPassword from './Pages/User/ForgotPassword';
+import ResetPassword from './Pages/User/ResetPassword';
+import Home from './Pages/User/Home';
+import Wishlist from './Pages/User/Wishlist';
+import Cart from './Pages/User/Cart';
+import Shop from './Pages/User/Shop'; // Import the new Shop page
+import Checkout from './Pages/User/Checkout';
+import Orders from './Pages/User/Orders';
+import ProductDetail from './Pages/User/ProductDetail';
+import Profile from './Pages/User/Profile';
 import { Toaster } from 'react-hot-toast';
 
 function App() {

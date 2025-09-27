@@ -8,9 +8,24 @@ export default function Navbar() {
     const user = JSON.parse(localStorage.getItem('user'));
 
     const handleLogout = () => {
-        localStorage.removeItem('user');
-        toast.success("Logged out successfully.");
-        navigate('/login');
+        toast((t) => (
+            <div className="flex flex-col items-center gap-2">
+                <p className="font-semibold">Are you sure you want to logout?</p>
+                <div className="flex gap-4">
+                    <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded" onClick={() => {
+                        localStorage.removeItem('user');
+                        toast.success("Logged out successfully.");
+                        navigate('/login');
+                        toast.dismiss(t.id);
+                    }}>
+                        Logout
+                    </button>
+                    <button className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded" onClick={() => toast.dismiss(t.id)}>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ));
     };
 
     return (
@@ -29,7 +44,7 @@ export default function Navbar() {
                 <div className="flex items-center space-x-4">
                     <div className="relative hidden md:block">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                           <SearchIcon />
+                           <SearchIcon/>
                         </span>
                         <input type="text" className="w-full pl-10 pr-4 py-2 text-gray-700 bg-white border rounded-md focus:outline-none focus:ring focus:ring-teal-500" placeholder="Search" />
                     </div>

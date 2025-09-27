@@ -18,6 +18,17 @@ const StarRating = ({ rating, setRating }) => (
     </div>
 );
 
+// A simple blocklist of inappropriate words. Should mirror the backend.
+const blocklist = ["damn", "hell", "crap", "idiot", "stupid", "dumb", "fool"];
+
+// Helper function to check for blocked words (case-insensitive)
+const containsBlockedWords = (text) => {
+    if (!text) return false;
+    const lowerCaseText = text.toLowerCase();
+    return blocklist.some(word => lowerCaseText.includes(word));
+};
+
+
 export default function Reviews({ productId }) {
     const [reviews, setReviews] = useState([]);
     const [userReview, setUserReview] = useState(null);
@@ -47,25 +58,50 @@ export default function Reviews({ productId }) {
         fetchReviews();
     }, [fetchReviews]);
     
+    const proceedWithUpdateReview = async () => {
+        try {
+            await updateReview(userReview._id, { rating, review: reviewText });
+            toast.success("Review updated successfully!");
+            fetchReviews();
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
     const handleSubmitReview = async (e) => {
         e.preventDefault();
         if (rating === 0 || !reviewText) {
             return toast.error("Please provide a rating and a review.");
         }
+
+        if (containsBlockedWords(reviewText)) {
+            return toast.error("Your review contains inappropriate language.");
+        }
         
         const reviewData = { productId, rating, review: reviewText };
 
-        try {
-            if (isEditing) {
-                await updateReview(userReview._id, { rating, review: reviewText });
-                toast.success("Review updated successfully!");
-            } else {
+        if (isEditing) {
+            toast((t) => (
+                <div className="flex flex-col items-center gap-2">
+                    <p className="font-semibold">Confirm your review update?</p>
+                    <div className="flex gap-4">
+                        <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onClick={() => { proceedWithUpdateReview(); toast.dismiss(t.id); }}>
+                            Confirm
+                        </button>
+                        <button className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded" onClick={() => toast.dismiss(t.id)}>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            ));
+        } else {
+            try {
                 await createReview(reviewData);
                 toast.success("Thank you for your review!");
+                fetchReviews();
+            } catch (error) {
+                toast.error(error.message);
             }
-            fetchReviews();
-        } catch (error) {
-            toast.error(error.message);
         }
     };
 

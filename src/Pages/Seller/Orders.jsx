@@ -33,17 +33,46 @@ export default function SellerOrders() {
         fetchOrders();
     }, [fetchOrders]);
     
+    const promptForStatusUpdate = (orderId, newStatus) => {
+        toast((t) => (
+            <div className="flex flex-col items-center gap-2">
+                <p className="font-semibold">Update status to "{newStatus}"?</p>
+                <div className="flex gap-4">
+                    <button
+                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                        onClick={() => {
+                            handleStatusUpdate(orderId, newStatus);
+                            toast.dismiss(t.id);
+                        }}
+                    >
+                        Confirm
+                    </button>
+                    <button
+                        className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+                        onClick={() => {
+                            setEditingOrderId(null); 
+                            toast.dismiss(t.id);
+                        }}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ));
+    };
+
     const handleStatusUpdate = async (orderId, newStatus) => {
         try {
             await updateOrderStatus(orderId, newStatus);
             toast.success("Order status updated!");
-            setEditingOrderId(null);
             fetchOrders();
         } catch (error) {
             toast.error(error.message || "Failed to update status.");
+        } finally {
+            setEditingOrderId(null); 
         }
     };
-
+    
     const handleCancelOrder = (orderId) => {
         toast((t) => (
             <div className="flex flex-col items-center gap-2">
@@ -108,9 +137,8 @@ export default function SellerOrders() {
                                                 <td className="p-4" rowSpan={order.products.length}>
                                                     {editingOrderId === order._id ? (
                                                         <select 
-                                                            value={order.status} 
-                                                            onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
-                                                            onBlur={() => setEditingOrderId(null)}
+                                                            defaultValue={order.status} 
+                                                            onChange={(e) => promptForStatusUpdate(order._id, e.target.value)}
                                                             autoFocus={true}
                                                             className="p-1 border rounded-md"
                                                         >
@@ -134,7 +162,8 @@ export default function SellerOrders() {
                                                 <td className="p-4 text-sm font-semibold space-y-1 align-top" rowSpan={order.products.length}>
                                                     <button 
                                                         onClick={() => setEditingOrderId(order._id)} 
-                                                        className="text-blue-600 hover:underline block"
+                                                        disabled={order.status === 'Delivered' || order.status === 'Cancelled'}
+                                                        className="text-blue-600 hover:underline block disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
                                                     >
                                                         Update
                                                     </button>

@@ -11,37 +11,65 @@ const SettingsCard = ({ title, children }) => (
 );
 
 export default function SellerSettings() {
-    const [email, setEmail] = useState('');
+    const [profile, setProfile] = useState({ email: '', passwordLastChangedAt: null, profileLastUpdatedAt: null });
     const [passwords, setPasswords] = useState({ password: '', confirmPassword: '' });
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchEmail = async () => {
+        const fetchProfile = async () => {
             try {
-                const profile = await getUserProfile();
-                setEmail(profile.email);
+                const profileData = await getUserProfile();
+                setProfile(profileData);
             } catch (error) {
                 console.log(error);
                 toast.error("Could not fetch profile data.");
             }
         };
-        fetchEmail();
+        fetchProfile();
     }, []);
 
-    const handleEmailChange = (e) => setEmail(e.target.value);
+    const handleEmailChange = (e) => setProfile(prev => ({ ...prev, email: e.target.value }));
     const handlePasswordChange = (e) => setPasswords({ ...passwords, [e.target.name]: e.target.value });
 
-    const handleEmailUpdate = async (e) => {
-        e.preventDefault();
+    const proceedWithEmailUpdate = async () => {
         try {
-            await updateUserProfile({ email });
+            const updatedProfile = await updateUserProfile({ email: profile.email });
+            setProfile(updatedProfile);
             toast.success("Email updated successfully!");
         } catch (error) {
             toast.error(error.message);
         }
     };
 
-    const handlePasswordUpdate = async (e) => {
+    const handleEmailUpdate = (e) => {
+        e.preventDefault();
+        toast((t) => (
+            <div className="flex flex-col items-center gap-2">
+                <p className="font-semibold">Are you sure you want to update your email?</p>
+                <div className="flex gap-4">
+                    <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onClick={() => { proceedWithEmailUpdate(); toast.dismiss(t.id); }}>
+                        Confirm
+                    </button>
+                    <button className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded" onClick={() => toast.dismiss(t.id)}>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ));
+    };
+    
+    const proceedWithPasswordUpdate = async () => {
+        try {
+            const updatedProfile = await updateUserProfile({ password: passwords.password });
+            setProfile(updatedProfile);
+            setPasswords({ password: '', confirmPassword: '' }); 
+            toast.success("Password updated successfully!");
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
+    const handlePasswordUpdate = (e) => {
         e.preventDefault();
         if (passwords.password !== passwords.confirmPassword) {
             return toast.error("New passwords do not match.");
@@ -49,19 +77,40 @@ export default function SellerSettings() {
         if (!passwords.password) {
             return toast.error("Password cannot be empty.");
         }
-        try {
-            await updateUserProfile({ password: passwords.password });
-            setPasswords({ password: '', confirmPassword: '' }); 
-            toast.success("Password updated successfully!");
-        } catch (error) {
-            toast.error(error.message);
-        }
+        toast((t) => (
+            <div className="flex flex-col items-center gap-2">
+                <p className="font-semibold">Are you sure you want to change your password?</p>
+                <div className="flex gap-4">
+                    <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onClick={() => { proceedWithPasswordUpdate(); toast.dismiss(t.id); }}>
+                        Confirm
+                    </button>
+                    <button className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded" onClick={() => toast.dismiss(t.id)}>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ));
     };
     
     const handleLogout = () => {
-        localStorage.removeItem('user');
-        toast.success("Logged out successfully.");
-        navigate('/login');
+        toast((t) => (
+            <div className="flex flex-col items-center gap-2">
+                <p className="font-semibold">Are you sure you want to logout?</p>
+                <div className="flex gap-4">
+                    <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded" onClick={() => {
+                        localStorage.removeItem('user');
+                        toast.success("Logged out successfully.");
+                        navigate('/login');
+                        toast.dismiss(t.id);
+                    }}>
+                        Logout
+                    </button>
+                    <button className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded" onClick={() => toast.dismiss(t.id)}>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ));
     };
 
     return (
@@ -75,7 +124,7 @@ export default function SellerSettings() {
                                 <label className="block text-sm font-medium text-gray-700">Email Address</label>
                                 <input 
                                     type="email" 
-                                    value={email} 
+                                    value={profile.email} 
                                     onChange={handleEmailChange} 
                                     className="mt-1 w-full p-2 border rounded-md" 
                                 />
@@ -83,6 +132,11 @@ export default function SellerSettings() {
                             <button type="submit" className="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700">
                                 Update Email
                             </button>
+                            {profile.profileLastUpdatedAt && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Last updated: {new Date(profile.profileLastUpdatedAt).toLocaleDateString()}
+                                </p>
+                            )}
                         </form>
                         <hr className="my-6" />
                         <form onSubmit={handlePasswordUpdate} className="space-y-4">
@@ -111,6 +165,11 @@ export default function SellerSettings() {
                             <button type="submit" className="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700">
                                 Change Password
                             </button>
+                             {profile.passwordLastChangedAt && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Password last changed: {new Date(profile.passwordLastChangedAt).toLocaleDateString()}
+                                </p>
+                            )}
                         </form>
                     </SettingsCard>
 
@@ -136,7 +195,7 @@ export default function SellerSettings() {
                             </div>
                              <div className="flex items-center justify-between">
                                 <label>Email for low stock alerts</label>
-                                <input type="checkbox" className="toggle-checkbox" checked />
+                                <input type="checkbox" className="toggle-checkbox" defaultChecked />
                             </div>
                         </div>
                     </SettingsCard>

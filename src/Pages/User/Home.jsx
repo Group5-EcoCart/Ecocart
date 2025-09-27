@@ -1,15 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getAllProducts } from '../../Service/Product.js';
 import Navbar from '../../Components/Navbar.jsx';
 import ProductCard from '../../Components/ProductCard.jsx';
 import toast from 'react-hot-toast';
+import { getWishlist } from '../../Service/Buyer.js';
 
 export default function Home() {
     const [products, setProducts] = useState([]);
+     const [wishlist, setWishlist] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    const fetchAllData = useCallback(async () => {
+        try {
+            const userData = JSON.parse(localStorage.getItem('user'));
+            if (!userData || !userData.token) {
+                navigate('/login');
+                return;
+            }
+            const [productsData, wishlistData] = await Promise.all([
+                getAllProducts(),
+                getWishlist()
+            ]);
+            setProducts(productsData);
+            setWishlist(wishlistData.products || []);
+        } catch (error) {
+            toast.error(error.message || "Could not fetch data.");
+        } finally {
+            setLoading(false);
+        }
+    }, [navigate]);
+
+    useEffect(() => {
+        fetchAllData();
+    }, [fetchAllData]);
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -65,7 +90,12 @@ export default function Home() {
                     </div>
                     <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
                         {products.slice(0, 4).map(product => (
-                            <ProductCard key={product._id} product={product} />
+                            <ProductCard 
+                                key={product._id} 
+                                product={product} 
+                                wishlistItems={wishlist}
+                                refreshWishlist={fetchAllData}
+                            />
                         ))}
                     </div>
                 </div>

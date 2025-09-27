@@ -51,3 +51,4 @@ export const createOrder = (orderData) => makeRequest('/api/buyer/orders/create'
 export const cancelOrder = (orderId) => makeRequest(`/api/buyer/orders/${orderId}/cancel`, 'PUT');
 export const getOrders = () => makeRequest('/api/buyer/orders');
 export const makePayment = (paymentData) => makeRequest('/api/buyer/payments/pay', 'POST', paymentData);
+export const createRazorpayOrder = (orderData) => makeRequest('/api/buyer/orders/razorpay', 'POST', orderData);

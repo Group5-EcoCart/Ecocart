@@ -6,23 +6,23 @@ import toast from 'react-hot-toast';
 
 const CartItem = ({ item, onQuantityChange, onRemove }) => {
     const product = item.product;
-    // Add a safeguard in case a product is null (e.g., deleted from DB)
     if (!product || typeof product.Price !== 'number') return null;
 
+    const isOutOfStock = product.Quantity <= 0;
     const imageUrl = product.Images && product.Images.length > 0 ? product.Images[0].src : 'https://via.placeholder.com/150';
 
     return (
-        <div className="flex items-center bg-white p-4 rounded-lg shadow-md mb-4">
+        <div className={`flex items-center bg-white p-4 rounded-lg shadow-md mb-4 ${isOutOfStock ? 'opacity-50 bg-red-50' : ''}`}>
             <img src={imageUrl} alt={product.Title} className="w-24 h-24 object-cover rounded-md" />
             <div className="flex-grow mx-4">
                 <h3 className="font-bold">{product.Title}</h3>
                 <p>Price: Rs.{product.Price.toFixed(2)}</p>
-                <p>EP: {product.EcoPoints}</p>
+                {isOutOfStock && <p className="font-bold text-red-600">This item is now out of stock.</p>}
             </div>
             <div className="flex items-center space-x-3">
-                <button onClick={() => onQuantityChange(product._id, item.quantity - 1)} className="px-3 py-1 border rounded-md">-</button>
+                <button onClick={() => onQuantityChange(product._id, item.quantity - 1)} disabled={isOutOfStock} className="px-3 py-1 border rounded-md disabled:opacity-50">-</button>
                 <span>{item.quantity}</span>
-                <button onClick={() => onQuantityChange(product._id, item.quantity + 1)} className="px-3 py-1 border rounded-md">+</button>
+                <button onClick={() => onQuantityChange(product._id, item.quantity + 1)} disabled={isOutOfStock} className="px-3 py-1 border rounded-md disabled:opacity-50">+</button>
             </div>
             <div className="w-24 text-center font-bold">
                 Rs.{(product.Price * item.quantity).toFixed(2)}
@@ -37,10 +37,8 @@ const CartItem = ({ item, onQuantityChange, onRemove }) => {
 export default function Cart() {
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
     const navigate = useNavigate();
 
-    // Wrapped fetch logic in useCallback to prevent re-creation on renders
     const fetchCart = useCallback(async () => {
         try {
             const data = await getCart();
@@ -65,8 +63,9 @@ export default function Cart() {
         try {
             await updateCartQuantity(productId, quantity);
             toast.success("Cart updated.");
-            fetchCart(); // Re-fetch the cart to get populated data
-        } catch (error) {
+            fetchCart();
+        } catch (error)
+ {
             toast.error(error.message);
         }
     };
@@ -75,14 +74,17 @@ export default function Cart() {
         try {
             await removeFromCart(productId);
             toast.success("Item removed from cart.");
-            fetchCart(); // Re-fetch the cart to get populated data
+            fetchCart();
         } catch (error) {
             toast.error(error.message);
         }
     };
     
-    const { subtotal, tax, total, epGain } = useMemo(() => {
-        if (!cart?.products?.length) return { subtotal: 0, tax: 0, total: 0, epGain: 0 };
+    const { subtotal, tax, total, epGain, isCartInvalid } = useMemo(() => {
+        if (!cart?.products?.length) return { subtotal: 0, tax: 0, total: 0, epGain: 0, isCartInvalid: false };
+        
+        const isCartInvalid = cart.products.some(item => item.product.Quantity <= 0);
+
         const subtotal = cart.products.reduce((acc, item) => {
             const price = item.product?.Price || 0;
             return acc + price * item.quantity;
@@ -93,10 +95,14 @@ export default function Cart() {
             const points = item.product?.EcoPoints || 0;
             return acc + points * item.quantity;
         }, 0);
-        return { subtotal, tax, total, epGain };
+        return { subtotal, tax, total, epGain, isCartInvalid };
     }, [cart]);
 
     const handleCheckout = () => {
+        if (isCartInvalid) {
+            toast.error("Please remove out-of-stock items before proceeding.");
+            return;
+        }
         if (!cart || cart.products.length === 0) {
             toast.error("Your cart is empty.");
             return;
@@ -115,7 +121,6 @@ export default function Cart() {
         <div className="bg-gray-50 min-h-screen">
             <Navbar />
             <main className="container mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8">
-                {/* Cart Items */}
                 <div className="flex-grow">
                     {cart && cart.products.length > 0 ? (
                         cart.products.map(item => (
@@ -131,7 +136,6 @@ export default function Cart() {
                     )}
                 </div>
 
-                {/* Order Summary */}
                 <aside className="w-full lg:w-1/3">
                     <div className="bg-white p-6 rounded-lg shadow-md">
                         <h2 className="text-xl font-bold mb-4">Order Summary</h2>
@@ -141,18 +145,19 @@ export default function Cart() {
                             <div className="flex justify-between"><span>EP Gain</span><span>{epGain}</span></div>
                         </div>
                         <hr className="my-4" />
-                        <h3 className="font-bold mb-2">Payment Method</h3>
-                        <div className="space-y-2">
-                            <div><input type="radio" id="cod" name="payment" value="Cash on Delivery" checked={paymentMethod === 'Cash on Delivery'} onChange={(e) => setPaymentMethod(e.target.value)} /> <label htmlFor="cod">Cash on Delivery</label></div>
-                            <div><input type="radio" id="upi" name="payment" value="UPI" checked={paymentMethod === 'UPI'} onChange={(e) => setPaymentMethod(e.target.value)} /> <label htmlFor="upi">UPI</label></div>
-                        </div>
-                        <hr className="my-4" />
                         <div className="flex justify-between font-bold text-lg">
                             <span>Total</span>
                             <span>Rs.{total.toFixed(2)}</span>
                         </div>
-                        <button onClick={handleCheckout} className="w-full mt-6 bg-green-500 text-white py-3 rounded-md hover:bg-green-600 font-bold">
-                            Buy Now
+                        {isCartInvalid && (
+                            <p className="text-red-500 text-sm mt-4 text-center">Your cart contains out-of-stock items. Please remove them to proceed.</p>
+                        )}
+                        <button 
+                            onClick={handleCheckout} 
+                            disabled={isCartInvalid}
+                            className="w-full mt-6 bg-green-500 text-white py-3 rounded-md hover:bg-green-600 font-bold disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            Proceed to Checkout
                         </button>
                     </div>
                 </aside>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../../Components/Navbar';
 import { getAddresses, addAddress } from '../../Service/Buyer';
-import { createOrder, makePayment } from '../../Service/Buyer';
+import { createOrder, makePayment, createRazorpayOrder } from '../../Service/Buyer';
 import toast from 'react-hot-toast';
 
 export default function Checkout() {
@@ -10,6 +10,7 @@ export default function Checkout() {
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [showNewAddressForm, setShowNewAddressForm] = useState(false);
     const [newAddress, setNewAddress] = useState({ street: '', city: '', state: '', postalCode: '', country: '' });
+    const [paymentMethod, setPaymentMethod] = useState('COD'); // State for payment method
     const [loading, setLoading] = useState(true);
 
     const navigate = useNavigate();
@@ -72,28 +73,53 @@ export default function Checkout() {
             return;
         }
         
-        try {
-            const orderPayload = {
-                products: cart.products.map(item => ({ product: item.product._id, quantity: item.quantity })),
-                totalAmount: summary.total,
-                address: selectedAddress,
-            };
-            const createdOrder = await createOrder(orderPayload);
-            toast.success("Order placed! Proceeding to payment...");
+        const orderPayload = {
+            products: cart.products.map(item => ({ product: item.product._id, quantity: item.quantity })),
+            totalAmount: summary.total,
+            address: selectedAddress,
+        };
+        const createdOrder = await createOrder(orderPayload);
 
-            // Proceed to payment simulation
-            const paymentPayload = {
-                orderId: createdOrder._id,
-                amount: createdOrder.totalAmount,
-                method: "COD" // Or get from state if you have multiple methods
-            };
-            await makePayment(paymentPayload);
-            
-            toast.success("Payment successful!");
-            navigate('/orders'); // Redirect to a user's orders page
-
-        } catch (error) {
-            toast.error(error.message);
+        if (paymentMethod === "COD") {
+            try {
+                const paymentPayload = {
+                    orderId: createdOrder._id,
+                    amount: createdOrder.totalAmount,
+                    method: "COD"
+                };
+                await makePayment(paymentPayload);
+                toast.success("Order placed successfully!");
+                navigate('/orders');
+            } catch (error) {
+                toast.error(error.message);
+            }
+        } else if (paymentMethod === "UPI") {
+            try {
+                const razorpayOrder = await createRazorpayOrder({ amount: summary.total });
+                const options = {
+                    key: import.meta.env.VITE_RAZORPAY_ID_KEY,
+                    amount: razorpayOrder.amount,
+                    currency: "INR",
+                    name: "EcoCart",
+                    description: "Test Transaction",
+                    order_id: razorpayOrder.id,
+                    handler: async (response) => {
+                        const paymentPayload = {
+                            orderId: createdOrder._id,
+                            amount: createdOrder.totalAmount,
+                            method: "Razorpay",
+                            transactionId: response.razorpay_payment_id
+                        };
+                        await makePayment(paymentPayload);
+                        toast.success("Payment successful!");
+                        navigate('/orders');
+                    },
+                };
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            } catch (error) {
+                toast.error(error.message);
+            }
         }
     };
 
@@ -141,13 +167,35 @@ export default function Checkout() {
                             <div className="flex justify-between"><span>EP Gain</span><span>{summary.epGain}</span></div>
                         </div>
                         <hr className="my-4" />
+                        
+                        <h3 className="font-bold mb-2">Payment Method</h3>
+                        <div className="space-y-2">
+                            <div>
+                                <input type="radio" id="cod" name="payment" value="COD" checked={paymentMethod === 'COD'} onChange={(e) => setPaymentMethod(e.target.value)} />
+                                <label htmlFor="cod" className="ml-2">Cash on Delivery</label>
+                            </div>
+                            <div>
+                                <input type="radio" id="upi" name="payment" value="UPI" checked={paymentMethod === 'UPI'} onChange={(e) => setPaymentMethod(e.target.value)} />
+                                <label htmlFor="upi" className="ml-2">UPI</label>
+                            </div>
+                        </div>
+
+                        <hr className="my-4" />
+
                         <div className="flex justify-between font-bold text-lg">
                             <span>Total</span>
                             <span>Rs.{summary.total.toFixed(2)}</span>
                         </div>
-                        <button onClick={handlePlaceOrder} className="w-full mt-6 bg-green-500 text-white py-3 rounded-md hover:bg-green-600 font-bold">
-                            Confirm Order & Pay
-                        </button>
+                        
+                        {paymentMethod === 'COD' ? (
+                            <button onClick={handlePlaceOrder} className="w-full mt-6 bg-green-500 text-white py-3 rounded-md hover:bg-green-600 font-bold">
+                                Place Order (COD)
+                            </button>
+                        ) : (
+                            <button onClick={handlePlaceOrder} className="w-full mt-6 bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 font-bold">
+                                Pay with Razorpay
+                            </button>
+                        )}
                     </div>
                 </aside>
             </main>

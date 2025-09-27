@@ -3,6 +3,7 @@ import Navbar from '../../Components/Navbar';
 import { getUserProfile, updateUserProfile, getUserAddresses, addAddress, updateAddress, deleteAddress } from '../../Service/User';
 import toast from 'react-hot-toast';
 
+// AddressForm component remains unchanged...
 const AddressForm = ({ initialData = {}, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
         street: initialData.street || '',
@@ -36,7 +37,7 @@ const AddressForm = ({ initialData = {}, onSave, onCancel }) => {
 
 
 export default function Profile() {
-    const [profile, setProfile] = useState({ email: '' });
+    const [profile, setProfile] = useState({ email: '', passwordLastChangedAt: null, profileLastUpdatedAt: null });
     const [passwords, setPasswords] = useState({ password: '', confirmPassword: '' });
     const [addresses, setAddresses] = useState([]);
     const [editingAddressId, setEditingAddressId] = useState(null);
@@ -45,7 +46,7 @@ export default function Profile() {
     const fetchData = useCallback(async () => {
         try {
             const [profileData, addressesData] = await Promise.all([getUserProfile(), getUserAddresses()]);
-            setProfile({ email: profileData.email });
+            setProfile(profileData);
             setAddresses(addressesData);
         } catch (error) {
             toast.error(error.message);
@@ -59,17 +60,45 @@ export default function Profile() {
     const handleProfileChange = (e) => setProfile({ ...profile, [e.target.name]: e.target.value });
     const handlePasswordChange = (e) => setPasswords({ ...passwords, [e.target.name]: e.target.value });
 
-    const handleProfileUpdate = async (e) => {
-        e.preventDefault();
+    const proceedWithEmailUpdate = async () => {
         try {
-            await updateUserProfile({ email: profile.email });
+            const updatedProfile = await updateUserProfile({ email: profile.email });
+            setProfile(updatedProfile); // Update profile state with new data from API
             toast.success("Profile updated successfully!");
         } catch (error) {
             toast.error(error.message);
         }
     };
+    
+    const handleProfileUpdate = (e) => {
+        e.preventDefault();
+        toast((t) => (
+            <div className="flex flex-col items-center gap-2">
+                <p className="font-semibold">Update your email?</p>
+                <div className="flex gap-4">
+                    <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onClick={() => { proceedWithEmailUpdate(); toast.dismiss(t.id); }}>
+                        Confirm
+                    </button>
+                    <button className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded" onClick={() => toast.dismiss(t.id)}>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ));
+    };
+    
+    const proceedWithPasswordUpdate = async () => {
+         try {
+            const updatedProfile = await updateUserProfile({ password: passwords.password });
+            setProfile(updatedProfile); // Update profile state with new data from API
+            setPasswords({ password: '', confirmPassword: '' });
+            toast.success("Password updated successfully!");
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
 
-    const handlePasswordUpdate = async (e) => {
+    const handlePasswordUpdate = (e) => {
         e.preventDefault();
         if (passwords.password !== passwords.confirmPassword) {
             return toast.error("Passwords do not match.");
@@ -77,13 +106,19 @@ export default function Profile() {
         if (!passwords.password) {
             return toast.error("Password cannot be empty.");
         }
-        try {
-            await updateUserProfile({ password: passwords.password });
-            setPasswords({ password: '', confirmPassword: '' });
-            toast.success("Password updated successfully!");
-        } catch (error) {
-            toast.error(error.message);
-        }
+        toast((t) => (
+            <div className="flex flex-col items-center gap-2">
+                <p className="font-semibold">Change your password?</p>
+                <div className="flex gap-4">
+                    <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onClick={() => { proceedWithPasswordUpdate(); toast.dismiss(t.id); }}>
+                        Confirm
+                    </button>
+                    <button className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded" onClick={() => toast.dismiss(t.id)}>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ));
     };
 
     const handleSaveAddress = async (addressData) => {
@@ -108,19 +143,10 @@ export default function Profile() {
             <div className="flex flex-col items-center gap-2">
                 <p className="font-semibold">Delete this address?</p>
                 <div className="flex gap-4">
-                    <button
-                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-                        onClick={() => {
-                            proceedWithDelete(id);
-                            toast.dismiss(t.id);
-                        }}
-                    >
+                    <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded" onClick={() => { proceedWithDelete(id); toast.dismiss(t.id); }}>
                         Delete
                     </button>
-                    <button
-                        className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
-                        onClick={() => toast.dismiss(t.id)}
-                    >
+                    <button className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded" onClick={() => toast.dismiss(t.id)}>
                         Cancel
                     </button>
                 </div>
@@ -151,6 +177,11 @@ export default function Profile() {
                             <label className="block mb-2">Email Address</label>
                             <input type="email" name="email" value={profile.email} onChange={handleProfileChange} className="w-full p-2 border rounded" />
                             <button type="submit" className="mt-4 bg-teal-600 text-white py-2 px-4 rounded hover:bg-teal-700">Update Email</button>
+                             {profile.profileLastUpdatedAt && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Last updated: {new Date(profile.profileLastUpdatedAt).toLocaleDateString()}
+                                </p>
+                            )}
                         </form>
                         <hr />
                         <form onSubmit={handlePasswordUpdate}>
@@ -158,6 +189,11 @@ export default function Profile() {
                             <input type="password" name="password" value={passwords.password} onChange={handlePasswordChange} placeholder="New Password" className="w-full p-2 border rounded mb-2" />
                             <input type="password" name="confirmPassword" value={passwords.confirmPassword} onChange={handlePasswordChange} placeholder="Confirm New Password" className="w-full p-2 border rounded" />
                             <button type="submit" className="mt-4 bg-teal-600 text-white py-2 px-4 rounded hover:bg-teal-700">Change Password</button>
+                             {profile.passwordLastChangedAt && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Password last changed: {new Date(profile.passwordLastChangedAt).toLocaleDateString()}
+                                </p>
+                            )}
                         </form>
                     </div>
 

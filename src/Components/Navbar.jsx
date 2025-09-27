@@ -22,6 +22,7 @@ export default function Navbar() {
                         <Link to="/home" className="hover:text-teal-200">Home</Link>
                         <Link to="/shop" className="hover:text-teal-200">Shop</Link>
                         <Link to="/orders" className="hover:text-teal-200">Orders</Link>
+                        <Link to="/my-reviews" className="hover:text-teal-200">My Reviews</Link>
                     </div>
                 </div>
 

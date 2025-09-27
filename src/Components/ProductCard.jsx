@@ -5,13 +5,18 @@ import { HeartIcon } from './Images';
 import { addToWishlist, addToCart } from '../Service/Buyer';
 
 export default function ProductCard({ product }) {
-    // Use a placeholder image if the product doesn't have one
-    const imageUrl = product.Images && product.Images.length > 0 ? product.Images[0].src : 'https://via.placeholder.com/300';
+    const imageUrl = 
+        product.Images && 
+        Array.isArray(product.Images) && 
+        product.Images.length > 0 && 
+        product.Images[0] && 
+        product.Images[0].src
+        ? product.Images[0].src 
+        : 'https://via.placeholder.com/300'; 
 
-    // Handler for adding to wishlist
     const handleAddToWishlist = async (e) => {
-        e.stopPropagation(); // Prevents the Link from navigating
-        e.preventDefault();  // Prevents default anchor behavior
+        e.stopPropagation();
+        e.preventDefault();
         try {
             await addToWishlist(product._id);
             toast.success(`${product.Title} added to wishlist!`);
@@ -20,10 +25,9 @@ export default function ProductCard({ product }) {
         }
     };
 
-    // Handler for adding to cart
     const handleAddToCart = async (e) => {
-        e.stopPropagation(); // Prevents the Link from navigating
-        e.preventDefault();  // Prevents default anchor behavior
+        e.stopPropagation();
+        e.preventDefault();
         try {
             await addToCart(product._id);
             toast.success(`${product.Title} added to cart!`);

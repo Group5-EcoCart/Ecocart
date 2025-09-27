@@ -9,7 +9,7 @@ export default function Pagination({ productsPerPage, totalProducts, paginate, c
     }
 
     if (totalPages <= 1) {
-        return null; // Don't render pagination if there's only one page
+        return null; 
     }
 
     return (

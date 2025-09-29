@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { uploadImages } from '../Service/UploadService';
+import { getWarehouses } from '../Service/Seller'; // Import warehouse service
 
 const FormField = ({ label, children, error }) => (
     <div>
@@ -20,7 +21,7 @@ const categories = [
 const defaultProductState = {
     Title: '', Price: '', Images: [], Category: 'clothing',
     Description: '', Weight: '', Height: '', Width: '',
-    Quantity: '', Keywords: '', Status: 'Active', Size: '', Color: ''
+    Quantity: '', Keywords: '', Status: 'Active', Size: '', Color: '', warehouse: ''
 };
 
 export default function ProductFormModal({ isOpen, onClose, onSave, initialData }) {
@@ -28,13 +29,27 @@ export default function ProductFormModal({ isOpen, onClose, onSave, initialData 
     const [errors, setErrors] = useState({});
     const [imageFiles, setImageFiles] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
+    const [warehouses, setWarehouses] = useState([]); // State for warehouses
 
+    // Fetch warehouses when the modal opens
     useEffect(() => {
         if (isOpen) {
+            const fetchWarehouses = async () => {
+                try {
+                    const data = await getWarehouses();
+                    setWarehouses(data);
+                } catch (error) {
+                    console.log(error);
+                    toast.error("Could not load your warehouses.");
+                }
+            };
+            fetchWarehouses();
+
             if (initialData) {
                 setProduct({
                     ...defaultProductState,
                     ...initialData,
+                    warehouse: initialData.warehouse || '', // Set initial warehouse
                     Keywords: Array.isArray(initialData.Keywords) ? initialData.Keywords.join(', ') : '',
                 });
             } else {
@@ -47,9 +62,9 @@ export default function ProductFormModal({ isOpen, onClose, onSave, initialData 
 
     const validateField = (name, value) => {
         let error = '';
-        const requiredFields = ['Title', 'Price', 'Description', 'Weight', 'Height', 'Width', 'Quantity'];
+        const requiredFields = ['Title', 'Price', 'Description', 'Weight', 'Height', 'Width', 'Quantity', 'warehouse'];
         if (requiredFields.includes(name) && !value) {
-            error = `${name} is required.`;
+            error = `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`;
         } else if (['Price', 'Weight', 'Height', 'Width'].includes(name) && Number(value) <= 0) {
             error = `${name} must be greater than 0.`;
         } else if (name === 'Quantity' && Number(value) < 0) {
@@ -84,7 +99,7 @@ export default function ProductFormModal({ isOpen, onClose, onSave, initialData 
     const validateForm = () => {
         const newErrors = {};
         Object.keys(defaultProductState).forEach(key => {
-            if (['Title', 'Price', 'Description', 'Weight', 'Height', 'Width', 'Quantity'].includes(key)) {
+            if (['Title', 'Price', 'Description', 'Weight', 'Height', 'Width', 'Quantity', 'warehouse'].includes(key)) {
                 const error = validateField(key, product[key]);
                 if (error) newErrors[key] = error;
             }
@@ -101,7 +116,7 @@ export default function ProductFormModal({ isOpen, onClose, onSave, initialData 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) {
-            toast.error('Please fill all fields.');
+            toast.error('Please fix the validation errors.');
             return;
         }
 
@@ -190,6 +205,19 @@ export default function ProductFormModal({ isOpen, onClose, onSave, initialData 
                             <input name="Quantity" type="number" value={product.Quantity} onChange={handleChange} className="w-full p-2 border rounded" />
                         </FormField>
                     </div>
+
+                    {/* --- WAREHOUSE SELECTION --- */}
+                    <FormField label="Warehouse" error={errors.warehouse}>
+                        <select name="warehouse" value={product.warehouse} onChange={handleChange} className="w-full p-2 border rounded bg-white">
+                            <option value="">Select a Warehouse</option>
+                            {warehouses.map(w => (
+                                <option key={w._id} value={w._id}>
+                                    {w.name} - {w.city}
+                                </option>
+                            ))}
+                        </select>
+                    </FormField>
+
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <FormField label="Weight (KG)" error={errors.Weight}>

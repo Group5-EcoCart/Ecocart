@@ -14,8 +14,9 @@ const SellerLayout = () => {
                     <NavLink to="/seller/products" className={getNavLinkClass}>Products</NavLink>
                     <NavLink to="/seller/orders" className={getNavLinkClass}>Orders</NavLink>
                     <NavLink to="/seller/analytics" className={getNavLinkClass}>Analytics</NavLink>
-                    <NavLink to="/seller/reviews" className={getNavLinkClass}>Reviews</NavLink> {/* Added Link */}
-                    <NavLink to="/seller/settings" className={getNavLinkClass}>Settings</NavLink> {/* Added Link */}
+                    <NavLink to="/seller/reviews" className={getNavLinkClass}>Reviews</NavLink>
+                    <NavLink to="/seller/warehouses" className={getNavLinkClass}>Warehouses</NavLink> {/* ADDED LINK */}
+                    <NavLink to="/seller/settings" className={getNavLinkClass}>Settings</NavLink>
                 </nav>
             </aside>
             <main className="flex-1 p-8 overflow-y-auto">

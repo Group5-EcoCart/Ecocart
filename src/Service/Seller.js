@@ -26,3 +26,9 @@ export const deleteProduct = (id) => makeRequest(`/api/seller/${id}`, 'DELETE');
 export const getSellerAnalytics = () => makeRequest('/api/seller/analytics');
 export const updateOrderStatus = (orderId, status) => makeRequest(`/api/seller/orders/${orderId}`, 'PUT', { status });
 export const getSellerReviews = () => makeRequest('/api/seller/reviews');
+export const updateProductStatus = (orderId, productId, status) => makeRequest(`/api/seller/orders/${orderId}/products/${productId}`, 'PUT', { status });
+
+export const getWarehouses = () => makeRequest('/api/seller/warehouses');
+export const addWarehouse = (warehouseData) => makeRequest('/api/seller/warehouses', 'POST', warehouseData);
+export const updateWarehouse = (id, warehouseData) => makeRequest(`/api/seller/warehouses/${id}`, 'PUT', warehouseData);
+export const deleteWarehouse = (id) => makeRequest(`/api/seller/warehouses/${id}`, 'DELETE');

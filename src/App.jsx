@@ -20,6 +20,7 @@ import MyReviews from './Pages/User/MyReviews';
 import SellerAnalytics from './Pages/Seller/Analytics';
 import SellerReviews from './Pages/Seller/Reviews';
 import SellerSettings from './Pages/Seller/Settings';
+import Warehouses from './Pages/Seller/Warehouses';
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
           <Route path="orders" element={<SellerOrders />} />
           <Route path="analytics" element={<SellerAnalytics />} />
           <Route path="reviews" element={<SellerReviews />} />
+          <Route path="warehouses" element={<Warehouses />} />
           <Route path="settings" element={<SellerSettings />} />
         </Route>
 

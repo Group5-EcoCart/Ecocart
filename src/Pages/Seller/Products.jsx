@@ -16,6 +16,7 @@ export default function SellerProducts() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
+
     const fetchProducts = useCallback(async () => {
         setLoading(true);
         try {
@@ -31,15 +32,18 @@ export default function SellerProducts() {
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
+
     const handleOpenModal = (product = null) => {
         setEditingProduct(product);
         setIsModalOpen(true);
     };
+
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingProduct(null);
     };
-    const handleSaveProduct = async (productData) => {
+
+    const proceedWithSave = async (productData) => {
         try {
             if (editingProduct) {
                 await updateProduct(editingProduct._id, productData);
@@ -54,6 +58,36 @@ export default function SellerProducts() {
             toast.error(error.message || "Failed to save product.");
         }
     };
+
+    const handleSaveProduct = async (productData) => {
+        if (editingProduct) {
+            toast((t) => (
+                <div className="flex flex-col items-center gap-2">
+                    <p className="font-semibold">Save changes to this product?</p>
+                    <div className="flex gap-4">
+                        <button
+                            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                            onClick={() => {
+                                proceedWithSave(productData);
+                                toast.dismiss(t.id);
+                            }}
+                        >
+                            Confirm
+                        </button>
+                        <button
+                            className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+                            onClick={() => toast.dismiss(t.id)}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            ));
+        } else {
+            proceedWithSave(productData);
+        }
+    };
+
     const handleDelete = (productId) => {
         toast((t) => (
             <div className="flex flex-col items-center gap-2">

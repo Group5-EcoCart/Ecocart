@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../Components/Navbar';
-import { getUserReviews } from '../../Service/Review';
+import { getUserReviews, deleteReview } from '../../Service/Review';
 import toast from 'react-hot-toast';
 
 // Star display component
@@ -42,6 +42,41 @@ export default function MyReviews() {
         fetchUserReviews();
     }, [fetchUserReviews]);
 
+    const proceedWithDelete = async (reviewId) => {
+        try {
+            await deleteReview(reviewId);
+            setReviews(prev => prev.filter(r => r._id !== reviewId));
+            toast.success("Review deleted successfully.");
+        } catch (error) {
+            toast.error(error.message || "Failed to delete review.");
+        }
+    };
+
+    const handleDelete = (reviewId) => {
+        toast((t) => (
+            <div className="flex flex-col items-center gap-2">
+                <p className="font-semibold">Delete this review permanently?</p>
+                <div className="flex gap-4">
+                    <button
+                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                        onClick={() => {
+                            proceedWithDelete(reviewId);
+                            toast.dismiss(t.id);
+                        }}
+                    >
+                        Delete
+                    </button>
+                    <button
+                        className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+                        onClick={() => toast.dismiss(t.id)}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        ));
+    };
+
     if (loading) return <div>Loading your reviews...</div>;
 
     return (
@@ -62,12 +97,20 @@ export default function MyReviews() {
                                         </span>
                                     </div>
                                     <p className="text-gray-700 mb-4">{review.review}</p>
-                                    <Link 
-                                        to={`/product/${review.product._id}`}
-                                        className="text-teal-600 font-semibold hover:underline"
-                                    >
-                                        Edit Review on Product Page
-                                    </Link>
+                                    <div className="flex space-x-4">
+                                        <Link 
+                                            to={`/product/${review.product._id}`}
+                                            className="text-blue-600 font-semibold hover:underline"
+                                        >
+                                            Edit
+                                        </Link>
+                                        <button 
+                                            onClick={() => handleDelete(review._id)}
+                                            className="text-red-600 font-semibold hover:underline"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

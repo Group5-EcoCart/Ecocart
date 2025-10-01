@@ -21,6 +21,7 @@ import SellerAnalytics from './Pages/Seller/Analytics';
 import SellerReviews from './Pages/Seller/Reviews';
 import SellerSettings from './Pages/Seller/Settings';
 import Warehouses from './Pages/Seller/Warehouses';
+import LowStockProducts from './Pages/Seller/LowStockProducts';
 
 function App() {
   return (
@@ -54,6 +55,7 @@ function App() {
           <Route path="reviews" element={<SellerReviews />} />
           <Route path="warehouses" element={<Warehouses />} />
           <Route path="settings" element={<SellerSettings />} />
+          <Route path="low-stock-products" element={<LowStockProducts />} />
         </Route>
 
 

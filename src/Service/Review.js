@@ -17,3 +17,4 @@ export const getUserReviews = () => makeRequest('/api/reviews/user');
 export const getReviewsByProduct = (productId) => makeRequest(`/api/reviews/product/${productId}`);
 export const createReview = (reviewData) => makeRequest('/api/reviews', 'POST', reviewData);
 export const updateReview = (reviewId, reviewData) => makeRequest(`/api/reviews/${reviewId}`, 'PUT', reviewData);
+export const deleteReview = (reviewId) => makeRequest(`/api/reviews/${reviewId}`, 'DELETE');

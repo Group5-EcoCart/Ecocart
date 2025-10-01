@@ -23,7 +23,11 @@ export default function Home() {
                 getAllProducts(),
                 getWishlist()
             ]);
-            setProducts(productsData);
+            
+            // Sort products by EcoPoints in descending order
+            const sortedProducts = productsData.sort((a, b) => b.EcoPoints - a.EcoPoints);
+            
+            setProducts(sortedProducts);
             setWishlist(wishlistData.products || []);
         } catch (error) {
             toast.error(error.message || "Could not fetch data.");
@@ -35,26 +39,6 @@ export default function Home() {
     useEffect(() => {
         fetchAllData();
     }, [fetchAllData]);
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const userData = JSON.parse(localStorage.getItem('user'));
-                if (!userData || !userData.token) {
-                    toast.error("You must be logged in to view this page.");
-                    navigate('/login');
-                    return;
-                }
-                const fetchedProducts = await getAllProducts(userData.token);
-                setProducts(fetchedProducts);
-            } catch (error) {
-                toast.error(error.message || "Could not fetch products.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProducts();
-    }, [navigate]);
 
     if (loading) {
         return <div>Loading...</div>; // You can replace this with a spinner component
@@ -70,9 +54,9 @@ export default function Home() {
                         <h2 className="text-4xl font-bold text-teal-700">Shop Sustainable,</h2>
                         <h2 className="text-4xl font-bold text-teal-700">Feel Responsible</h2>
                         <p className="mt-4 text-gray-600">Discover eco-friendly products that make a positive impact on our environment.</p>
-                        <button className="mt-6 bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-colors">
+                        <Link to="/shop" className="mt-6 inline-block bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-colors">
                             Shop Now
-                        </button>
+                        </Link>
                     </div>
                     <div className="mt-8 md:mt-0 md:ml-8">
                         <img src="images/home-bg.png" alt="Sustainable Products" className="rounded-lg shadow-md w-full max-w-sm" />

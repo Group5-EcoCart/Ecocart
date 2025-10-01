@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
 const NotificationItem = ({ icon, title, message, actionText, onActionClick }) => (
     <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:bg-gray-50">
         <div className="flex items-center">
@@ -21,8 +23,9 @@ const NotificationItem = ({ icon, title, message, actionText, onActionClick }) =
 
 
 export default function Notifications({ products, orders }) {
+    const navigate = useNavigate();
     const lowStockItems = products.filter(p => p.Quantity <= 5);
-    const pendingOrders = orders.filter(o => o.status === 'Pending');
+    const pendingOrders = orders.filter(o => o.products.some(p => p.status === 'Pending'));
 
     return (
         <div className="mt-8">
@@ -34,7 +37,7 @@ export default function Notifications({ products, orders }) {
                         title="Low Stock Alert"
                         message={`${lowStockItems.length} items are running low in stock. Restock now to avoid delays.`}
                         actionText="View"
-                        onActionClick={() => alert('Navigate to products page')}
+                        onActionClick={() => navigate('/seller/low-stock-products')}
                     />
                 )}
 
@@ -44,7 +47,7 @@ export default function Notifications({ products, orders }) {
                         title="Pending Orders"
                         message={`You have ${pendingOrders.length} pending orders that need to be processed.`}
                         actionText="View"
-                        onActionClick={() => alert('Navigate to orders page')}
+                        onActionClick={() => navigate('/seller/orders')}
                     />
                 )}
 

@@ -10,17 +10,15 @@ export default function Checkout() {
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [showNewAddressForm, setShowNewAddressForm] = useState(false);
     const [newAddress, setNewAddress] = useState({ street: '', city: '', state: '', postalCode: '', country: '' });
-    const [paymentMethod, setPaymentMethod] = useState('COD'); // State for payment method
+    const [paymentMethod, setPaymentMethod] = useState('COD');
     const [loading, setLoading] = useState(true);
 
     const navigate = useNavigate();
     const location = useLocation();
     
-    // Get cart data passed from the Cart page
     const { cart, summary } = location.state || {};
 
     useEffect(() => {
-        // If no cart data, redirect back to cart
         if (!cart || !summary) {
             toast.error("Your cart is empty. Please add items before checking out.");
             navigate('/cart');
@@ -31,12 +29,11 @@ export default function Checkout() {
             try {
                 const userAddresses = await getAddresses();
                 setAddresses(userAddresses);
-                // Pre-select the default or first address
                 if (userAddresses.length > 0) {
                     const defaultAddress = userAddresses.find(a => a.isDefault) || userAddresses[0];
                     setSelectedAddress(defaultAddress._id);
                 } else {
-                    setShowNewAddressForm(true); // Show form if no addresses exist
+                    setShowNewAddressForm(true);
                 }
             } catch (error) {
                 toast.error(error.message);
@@ -72,53 +69,67 @@ export default function Checkout() {
             toast.error("Please select or add a shipping address.");
             return;
         }
-        
+
         const orderPayload = {
             products: cart.products.map(item => ({ product: item.product._id, quantity: item.quantity })),
             totalAmount: summary.total,
             address: selectedAddress,
         };
-        const createdOrder = await createOrder(orderPayload);
 
         if (paymentMethod === "COD") {
             try {
+                const createdOrder = await createOrder(orderPayload);
                 const paymentPayload = {
                     orderId: createdOrder._id,
-                    amount: createdOrder.totalAmount,
+                    amount: createdOrder.totalAmount, // This is correct for COD
                     method: "COD"
                 };
                 await makePayment(paymentPayload);
-                toast.success("Order placed successfully!");
+                toast.success("Order placed successfully! Redirecting...");
                 navigate('/orders');
             } catch (error) {
-                toast.error(error.message);
+                toast.error(error.message || "Failed to place COD order.");
             }
         } else if (paymentMethod === "UPI") {
             try {
-                const razorpayOrder = await createRazorpayOrder({ amount: summary.total });
+                const razorpayPayload = { amount: summary.total };
+                const razorpayOrder = await createRazorpayOrder(razorpayPayload);
+                
                 const options = {
                     key: import.meta.env.VITE_RAZORPAY_ID_KEY,
                     amount: razorpayOrder.amount,
                     currency: "INR",
                     name: "EcoCart",
-                    description: "Test Transaction",
+                    description: "Transaction for your EcoCart order",
                     order_id: razorpayOrder.id,
                     handler: async (response) => {
-                        const paymentPayload = {
-                            orderId: createdOrder._id,
-                            amount: createdOrder.totalAmount,
-                            method: "Razorpay",
-                            transactionId: response.razorpay_payment_id
-                        };
-                        await makePayment(paymentPayload);
-                        toast.success("Payment successful!");
-                        navigate('/orders');
+                        try {
+                            // Order is created only after successful payment response
+                            const createdOrder = await createOrder(orderPayload);
+                            
+                            // **THE ACTUAL FIX:** The `makePayment` call also needs the amount in the smallest unit.
+                            const paymentPayload = {
+                                orderId: createdOrder._id,
+                                amount: createdOrder.totalAmount, // Keep this as the total in Rupees for your db record
+                                method: "Razorpay",
+                                transactionId: response.razorpay_payment_id
+                            };
+                            await makePayment(paymentPayload);
+
+                            toast.success("Payment successful! Redirecting to your orders...");
+                            navigate('/orders');
+                        } catch (handlerError) {
+                            toast.error(handlerError.message || "Payment verification failed. Please contact support.");
+                        }
                     },
+                    theme: {
+                        color: "#14b8a6"
+                    }
                 };
                 const rzp = new window.Razorpay(options);
                 rzp.open();
             } catch (error) {
-                toast.error(error.message);
+                toast.error(error.message || "Could not initiate payment.");
             }
         }
     };

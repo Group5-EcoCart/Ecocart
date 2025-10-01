@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../Components/Navbar';
 import { getOrders, cancelOrder } from '../../Service/Buyer';
 import toast from 'react-hot-toast';
 
 const OrderItem = ({ order, onCancel }) => {
-    // ... This component remains exactly the same as before
     const firstProductItem = order.products[0];
     const product = firstProductItem?.product;
 
@@ -19,16 +18,28 @@ const OrderItem = ({ order, onCancel }) => {
     
     const imageUrl = product.Images && product.Images.length > 0 ? product.Images[0].src : 'https://via.placeholder.com/150';
 
+    // Determine if the order can be cancelled.
+    const isCancellable = order.products.every(p => p.status !== 'Delivered' && p.status !== 'Cancelled');
+    
+    // Calculate the overall status for display
+    const overallStatus = order.products.every(p => p.status === 'Cancelled') 
+        ? 'Cancelled' 
+        : (order.products.some(p => p.status === 'Delivered') ? 'Delivered' : 'Processing');
+
+
     return (
         <div className="bg-white p-4 rounded-lg shadow-md flex flex-col md:flex-row items-start md:items-center gap-4 mb-4">
-            <img src={imageUrl} alt={product.Title || 'Product Image'} className="w-24 h-24 object-cover rounded-md" />
+            <Link to={`/product/${product._id}`}>
+                <img src={imageUrl} alt={product.Title || 'Product Image'} className="w-24 h-24 object-cover rounded-md" />
+            </Link>
             
             <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-4 items-center w-full">
                 <div>
                     <h4 className="font-bold text-gray-500 text-sm">Product Detail</h4>
-                    <p className="font-semibold">{product.Title || 'N/A'}</p>
+                    <Link to={`/product/${product._id}`} className="font-semibold hover:underline">{product.Title || 'N/A'}</Link>
                     <p>Price: Rs.{(product.Price ?? 0).toFixed(2)}</p>
                     <p>EP: {product.EcoPoints ?? 0}</p>
+                    <p>CO₂e: {product.CarbonFootPrint ? `${product.CarbonFootPrint.toFixed(2)}g` : 'N/A'}</p>
                 </div>
                 <div>
                     <h4 className="font-bold text-gray-500 text-sm">Order Detail</h4>
@@ -46,15 +57,15 @@ const OrderItem = ({ order, onCancel }) => {
                 </div>
                 <div>
                     <h4 className="font-bold text-gray-500 text-sm">Order Status</h4>
-                    <p className={`font-semibold flex items-center ${order.status === 'Cancelled' ? 'text-red-500' : 'text-teal-600'}`}>
-                        {order.status}
+                    <p className={`font-semibold flex items-center ${overallStatus === 'Cancelled' ? 'text-red-500' : 'text-teal-600'}`}>
+                        {overallStatus}
                         <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </p>
                 </div>
                 <div className="text-center">
                     <button 
                         onClick={() => onCancel(order._id)}
-                        disabled={order.status === 'Delivered' || order.status === 'Cancelled'}
+                        disabled={!isCancellable}
                         className="text-red-500 hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
                     >
                         Cancel Order
@@ -118,7 +129,7 @@ export default function Orders() {
         try {
             const { message, order: updatedOrder } = await cancelOrder(orderId);
             setOrders(prevOrders => 
-                prevOrders.map(o => o._id === orderId ? { ...o, status: updatedOrder.status } : o)
+                prevOrders.map(o => o._id === orderId ? updatedOrder : o)
             );
             toast.success(message);
         } catch (error) {

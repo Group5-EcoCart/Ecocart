@@ -4,26 +4,17 @@ import { getDashboardStats, getSellerOrders, getSellerProducts } from '../../Ser
 import toast from 'react-hot-toast';
 import Notifications from '../../Components/Notifications';
 
-const MetricCard = ({ title, value, change, unit = '' }) => {
-    const formattedChange = change.toFixed(1);
-    const isPositive = change >= 0;
-
+const MetricCard = ({ title, value, unit = '' }) => {
     return (
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-gray-500 text-sm font-semibold">{title}</h3>
             <p className="text-3xl font-bold mt-2">{value}{unit}</p>
-            {isFinite(change) && (
-                <p className={`text-sm mt-1 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                    {isPositive ? '+' : ''}{formattedChange}%
-                </p>
-            )}
         </div>
     );
 };
 
 export default function SellerDashboard() {
     const [stats, setStats] = useState({ products: 0, orders: 0, revenue: 0, carbon: 0 });
-    const [statsChange, setStatsChange] = useState({ products: 0, orders: 0, revenue: 0, carbon: 0 });
     const [chartData, setChartData] = useState([]);
     const [products, setProducts] = useState([]);
     const [orders, setOrders] = useState([]);
@@ -38,7 +29,7 @@ export default function SellerDashboard() {
                     getSellerProducts()
                 ]);
                 
-                const { keyMetrics, changes } = dashboardData;
+                const { keyMetrics } = dashboardData;
                 
                 setProducts(productsData);
                 setOrders(ordersResponse.orders);
@@ -50,7 +41,6 @@ export default function SellerDashboard() {
                     carbon: keyMetrics.avgCarbon
                 });
                 
-                setStatsChange(changes);
                 const dataByDate = ordersResponse.orders.reduce((acc, order) => {
                     const date = new Date(order.createdAt).toLocaleDateString();
                     acc[date] = acc[date] || { date, sales: 0, carbon: 0 };
@@ -82,10 +72,10 @@ export default function SellerDashboard() {
             <main className="flex-1 p-8 overflow-y-auto">
                 <h2 className="text-3xl font-bold mb-6">Dashboard Overview</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <MetricCard title="Total Products" value={stats.products} change={statsChange.products} />
-                    <MetricCard title="Active Orders" value={stats.orders} change={statsChange.orders} />
-                    <MetricCard title="Revenue" value={`Rs.${stats.revenue.toFixed(2)}`} change={statsChange.revenue} />
-                    <MetricCard title="Average Carbon Impact" value={`${stats.carbon.toFixed(2)}`} unit="g CO2e" change={statsChange.carbon} />
+                    <MetricCard title="Total Products" value={stats.products} />
+                    <MetricCard title="Active Orders" value={stats.orders} />
+                    <MetricCard title="Revenue" value={`Rs.${stats.revenue.toFixed(2)}`} />
+                    <MetricCard title="Average Carbon Impact" value={`${stats.carbon.toFixed(2)}`} unit="g CO2e" />
                 </div>
                 <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="bg-white p-6 rounded-lg shadow-md">
